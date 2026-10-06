@@ -1,8 +1,5 @@
 name: Build AAB
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,9 +9,13 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - run: chmod +x gradlew
-      - run: ./gradlew bundleRelease
+      - name: Fix and Build
+        run: |
+          G=$(find . -name gradlew -type f | head -1)
+          echo "Found at $G"
+          chmod +x $G
+          $G bundleRelease
       - uses: actions/upload-artifact@v4
         with:
           name: ChandioX-AAB
-          path: app/build/outputs/bundle/release/*.aab
+          path: "**/build/outputs/bundle/release/*.aab"
