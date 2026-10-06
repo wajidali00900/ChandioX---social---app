@@ -9,13 +9,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Fix and Build
+      - name: Build AAB
         run: |
-          G=$(find . -name gradlew -type f | head -1)
-          echo "Found at $G"
-          chmod +x $G
-          $G bundleRelease
+          chmod +x gradlew
+          ./gradlew bundleRelease
       - uses: actions/upload-artifact@v4
         with:
           name: ChandioX-AAB
-          path: "**/build/outputs/bundle/release/*.aab"
+          path: app/build/outputs/bundle/release/*.aab
