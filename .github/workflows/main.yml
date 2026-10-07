@@ -2,7 +2,6 @@ name: Build AAB
 on: 
   push:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,21 +19,29 @@ jobs:
 
       - name: Create Keystore
         run: |
-          keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -storepass android -alias upload -keypass android -dname "CN=ChandioX, OU=App, O=ChandioX, L=City, S=State, C=PK"
+          keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -storepass android -alias upload -keypass android -dname "CN=ChandioX"
           mkdir -p app
-          cp my-upload-key.jks app/my-upload-key.jks
-          echo "MYAPP_UPLOAD_STORE_FILE=my-upload-key.jks" >> app/keystore.properties
-          echo "MYAPP_UPLOAD_KEY_ALIAS=upload" >> app/keystore.properties
-          echo "MYAPP_UPLOAD_STORE_PASSWORD=android" >> app/keystore.properties
-          echo "MYAPP_UPLOAD_KEY_PASSWORD=android" >> app/keystore.properties
+          cp my-upload-key.jks app/my-upload-key.jks || true
+          mkdir -p android/app
+          cp my-upload-key.jks android/app/my-upload-key.jks || true
 
       - name: Build AAB
         run: |
-          chmod +x gradlew
-          ./gradlew bundleRelease -x lint --no-daemon
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+            ./gradlew bundleRelease -x lint --no-daemon
+          elif [ -f "./android/gradlew" ]; then
+            chmod +x ./android/gradlew
+            cd android && ./gradlew bundleRelease -x lint --no-daemon
+          else
+            gradle bundleRelease -x lint --no-daemon
+          fi
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: ChandioX-AAB-Final
-          path: app/build/outputs/bundle/release/*.aab
+          name: ChandioX-AAB
+          path: |
+            app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/bundle/release/*.aab
+            **/build/outputs/bundle/release/*.aab
