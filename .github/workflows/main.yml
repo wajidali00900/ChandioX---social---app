@@ -11,7 +11,7 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 9.3.1
+          gradle-version: 8.7
 
       - name: Fix Wrapper to 9.3.1
         run: |
