@@ -10,7 +10,7 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  namespace = "com.aistudio.chandiox.social"
 
   defaultConfig {
     applicationId = "com.aistudio.chandiox.social"
