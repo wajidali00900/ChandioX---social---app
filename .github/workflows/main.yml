@@ -15,12 +15,11 @@ jobs:
         with:
           gradle-version: 8.7
 
-      -      - name: Fix Wrapper to 8.11.1
+      - name: Fix Wrapper to 8.11.1
         run: |
           cd android
           ./gradlew wrapper --gradle-version 8.11.1
           chmod +x gradlew || true
-
 
       - name: Create Keystore and Fix Files
         run: |
@@ -32,7 +31,6 @@ jobs:
           if [ -f "app/my-upload-key.jks" ]; then
             cp my-upload-key.jks app/my-upload-key.jks || true
           fi
-          ls -lh *.jks app/*.jks || true
           # 2. Create dummy google-services.json if missing
           if [ ! -f "app/google-services.json" ]; then
             echo '{"project_info":{"project_number":"123456","project_id":"chandiox-dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456:android:123456","android_client_info":{"package_name":"com.aistudio.chandiox.social"}},"api_key":[{"current_key":"dummy_key_here"}]}]}' > app/google-services.json
