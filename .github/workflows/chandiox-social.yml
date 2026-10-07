@@ -1,26 +1,45 @@
-name: CI Workflow
+name: Gift Head Workflow
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  build:
+  build-gift-head:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          node-version: "20"
+          flutter-version: "3.22.0"
+          channel: "stable"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install Dependencies
+        run: flutter pub get
 
-      - name: Run build
-        run: npm run build
+      - name: Build APK
+        run: |
+          echo "Building Gift Head Module for ChandioX..."
+          flutter build apk --debug --target=lib/features/gift_head/gift_head.dart
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gift-head-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+  send-gift-logic:
+    runs-on: ubuntu-latest
+    needs: build-gift-head
+
+    steps:
+      - name: Run Gift Logic
+        run: |
+          echo "Gift Head Workflow Started"
+          echo "User can send gift -> Deduct coins -> Show animation"
