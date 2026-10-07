@@ -12,10 +12,21 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Gradle Wrapper
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Fix missing Gradle Wrapper
         run: |
+          if [ ! -f "./gradlew" ] && [ ! -f "./android/gradlew" ]; then
+            echo "Gradle wrapper missing, creating it..."
+            gradle wrapper --gradle-version 8.7
+          fi
           chmod +x gradlew || true
-          chmod +x ./android/gradlew || true
+          chmod +x android/gradlew || true
+          ls -la
+          ls -la android/ || true
 
       - name: Create Keystore
         run: |
@@ -25,15 +36,19 @@ jobs:
           mkdir -p android/app
           cp my-upload-key.jks android/app/my-upload-key.jks || true
 
-      - name: Build AAB with Wrapper
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: bundleRelease -x lint --no-daemon --no-configuration-cache
-          gradle-version: wrapper
+      - name: Build AAB
+        run: |
+          if [ -f "./android/gradlew" ]; then
+            cd android && ./gradlew bundleRelease -x lint --no-daemon --no-configuration-cache
+          elif [ -f "./gradlew" ]; then
+            ./gradlew bundleRelease -x lint --no-daemon --no-configuration-cache
+          else
+            gradle bundleRelease -x lint --no-daemon --no-configuration-cache
+          fi
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: ChandioX-AAB
+          name: ChandioX-AAB-FINAL
           path: |
             **/build/outputs/bundle/release/*.aab
