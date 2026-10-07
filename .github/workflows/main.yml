@@ -1,40 +1,26 @@
-name: Deploy ChandioX to GitHub Pages
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
+name: Build AAB
+on: [push, workflow_dispatch]
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload website files
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          path: '.'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build AAB
+        run: |
+          chmod +x gradlew || echo "no gradlew, using gradle"
+          if [ -f "./gradlew" ]; then
+            ./gradlew bundleRelease
+          else
+            gradle bundleRelease
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChandioX-AAB
+          path: |
+            app/build/outputs/bundle/release/*.aab
+            **/*.aab
