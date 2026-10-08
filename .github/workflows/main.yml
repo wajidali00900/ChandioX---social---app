@@ -18,14 +18,27 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
       - name: Build Android APK
-        run: ./gradlew assembleRelease -x lint --no-daemon
+        run: |
+          if [ -f "./android/gradlew" ]; then
+            cd android && chmod +x gradlew && ./gradlew assembleRelease -x lint --no-daemon
+          elif [ -f "./gradlew" ]; then
+            chmod +x gradlew && ./gradlew assembleRelease -x lint --no-daemon
+          else
+            gradle assembleRelease -x lint --no-daemon
+          fi
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: VibeX-APK
-          path: app/build/outputs/apk/release/*.apk
+          path: |
+            app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/release/*.apk
+            build/app/outputs/flutter-apk/*.apk
