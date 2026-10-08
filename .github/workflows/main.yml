@@ -6,47 +6,43 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: 8.7
 
-      - name: Fix Wrapper to 8.11.1
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Fix Wrapper version in workflow
         run: |
-          cd android
           ./gradlew wrapper --gradle-version 8.11.1
           chmod +x gradlew || true
 
       - name: Create Keystore and Fix Files
         run: |
-          # 1. Generate upload key if not exists
+          # 1. Generate upload key if it not exists
           if [ ! -f "my-upload-key.jks" ]; then
             echo "Creating my-upload-key.jks..."
-            keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android, O=Android, C=US"
+            keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias -storepass my-store-password -keypass my-key-password -dname "CN=Android, O=Google, C=US"
           fi
-          if [ -f "app/my-upload-key.jks" ]; then
+          if [ -f "my-upload-key.jks" ]; then
             cp my-upload-key.jks app/my-upload-key.jks || true
           fi
+          
           # 2. Create dummy google-services.json if missing
           if [ ! -f "app/google-services.json" ]; then
-            echo '{"project_info":{"project_number":"123456","project_id":"chandiox-dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456:android:123456","android_client_info":{"package_name":"com.aistudio.chandiox.social"}},"api_key":[{"current_key":"dummy_key_here"}]}]}' > app/google-services.json
+            echo '{"project_info":{"project_number":"123456","project_id":"chandiox-social-app","storage_bucket":"://appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456:android:123456","android_client_info":{"package_name":"com.chandio.social"}},"api_key":[{"current_key":"mock_key_here"}]}]}' > app/google-services.json
           fi
 
       - name: Build AAB
         run: |
-          if [ -f "android/gradlew" ]; then
-            cd android && ./gradlew bundleRelease -x lint --no-daemon --no-configuration-cache
-          else
-            ./gradlew bundleRelease -x lint --no-daemon --no-configuration-cache
-          fi
-
-      - name: Upload AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: Chandiox-AAB-FINAL
-          path: "**/build/outputs/bundle/release/*.aab"
+          ./gradlew bundleRelease -x lint --no-daemon --no-configuration-cache
+          
           
