@@ -19,30 +19,29 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-
-      - name: Fix Wrapper version in workflow
-        run: |
-          ./gradlew wrapper --gradle-version 8.11.1
-          chmod +x gradlew || true
+          generate-job-summary: true
 
       - name: Create Keystore and Fix Files
         run: |
-          # 1. Generate upload key if it not exists
+          # 1. Generate upload key if it does not exist
           if [ ! -f "my-upload-key.jks" ]; then
             echo "Creating my-upload-key.jks..."
             keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias -storepass my-store-password -keypass my-key-password -dname "CN=Android, O=Google, C=US"
           fi
-          if [ -f "my-upload-key.jks" ]; then
+          
+          # Assign to app directory if exists
+          if [ -d "app" ]; then
             cp my-upload-key.jks app/my-upload-key.jks || true
           fi
           
           # 2. Create dummy google-services.json if missing
-          if [ ! -f "app/google-services.json" ]; then
+          if [ -d "app" ] && [ ! -f "app/google-services.json" ]; then
             echo '{"project_info":{"project_number":"123456","project_id":"chandiox-social-app","storage_bucket":"://appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456:android:123456","android_client_info":{"package_name":"com.chandio.social"}},"api_key":[{"current_key":"mock_key_here"}]}]}' > app/google-services.json
           fi
 
-      - name: Build AAB
+      - name: Build AAB with Gradle
         run: |
-          ./gradlew bundleRelease -x lint --no-daemon --no-configuration-cache
+          gradle bundleRelease -x lint --no-daemon --no-configuration-cache
+          
           
           
