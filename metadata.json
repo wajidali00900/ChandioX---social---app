@@ -1,6 +1,0 @@
-{
-  "name": "ChandioX Social",
-  "description": "A feature-rich social media app with News Feed, Reels, Watch Videos, Profile, Stories, and real-time interactions.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
