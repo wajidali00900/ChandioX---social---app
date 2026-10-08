@@ -1,4 +1,4 @@
-nname: Android Build Workflow
+name: Android Build Workflow
 
 on:
   push:
@@ -18,15 +18,14 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.3.1' # Version change kiya hai plugin compatibility ke liye
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
 
-      - name: Build Android App (AAB)
-        run: |
-          gradle bundleRelease -x lint --no-daemon
-          
-          
-          
-          
+      - name: Build Android APK
+        run: ./gradlew assembleRelease -x lint --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VibeX-APK
+          path: app/build/outputs/apk/release/*.apk
