@@ -23,17 +23,12 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
 
-    - name: Build Android APK
+    - name: Force Build APK
       run: |
-        if [ -f "app/build.gradle.kts" ] || [ -f "app/build.gradle" ]; then
-          cd app && gradle assembleDebug
-        else
-          gradle assembleDebug
-        fi
+        gradle :app:assembleDebug || gradle assembleDebug || gradle assemble
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ChandioX-Debug-APK
-        path: "**/build/outputs/apk/debug/*.apk"
-        
+        path: "**/build/outputs/apk/**/*.apk"
